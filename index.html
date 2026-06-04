@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart City — CCTV Control Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#070b10;--surface:#0d1520;--card:#101c2c;--border:#1a3050;
+    --accent:#00c8ff;--accent2:#00ffa3;--warn:#ff8c00;--danger:#ff3b3b;
+    --text:#c8dff0;--muted:#4a6a88;--online:#00ffa3;
+    --font-ui:'Rajdhani',sans-serif;--font-mono:'Share Tech Mono',monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-ui);min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px);pointer-events:none;z-index:999;}
+  body::after{content:'';position:fixed;left:0;right:0;height:120px;background:linear-gradient(180deg,transparent,rgba(0,200,255,0.04),transparent);animation:scanbar 6s linear infinite;pointer-events:none;z-index:998;}
+  @keyframes scanbar{from{top:-120px}to{top:100vh}}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:10px 24px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:100;}
+  .logo{display:flex;align-items:center;gap:12px;}
+  .logo-icon{width:36px;height:36px;border:1.5px solid var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;}
+  .logo-icon::before{content:'';width:14px;height:10px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;border:1.5px solid var(--accent);display:block;}
+  .logo-icon::after{content:'';position:absolute;right:6px;top:50%;transform:translateY(-50%);width:7px;height:7px;border-radius:50%;border:1.5px solid var(--accent);}
+  .logo-text h1{font-size:17px;font-weight:700;letter-spacing:2px;color:#fff;line-height:1;}
+  .logo-text p{font-size:11px;color:var(--muted);letter-spacing:3px;margin-top:2px;font-family:var(--font-mono);}
+  .header-center{font-family:var(--font-mono);font-size:12px;color:var(--accent);letter-spacing:1px;text-align:center;}
+  .header-center span{color:var(--muted);}
+  .header-right{display:flex;align-items:center;gap:20px;}
+  .badge-vpn{display:flex;align-items:center;gap:6px;border:1px solid var(--accent2);border-radius:4px;padding:4px 10px;font-size:11px;font-family:var(--font-mono);color:var(--accent2);}
+  .dot{width:7px;height:7px;border-radius:50%;animation:pulse 1.8s ease-in-out infinite;}
+  .dot.green{background:var(--online);box-shadow:0 0 6px var(--online);}
+  .dot.red{background:var(--danger);box-shadow:0 0 6px var(--danger);}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .clock{font-family:var(--font-mono);font-size:13px;color:var(--text);min-width:80px;text-align:right;}
+
+  .layout{display:grid;grid-template-columns:220px 1fr 200px;height:calc(100vh - 58px);gap:0;}
+
+  /* SIDEBAR LEFT */
+  .sidebar-left{background:var(--surface);border-right:1px solid var(--border);padding:16px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
+  .section-title{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;font-family:var(--font-mono);margin-bottom:8px;}
+  .net-block{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px 12px;}
+  .net-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0;border-bottom:1px solid rgba(26,48,80,0.5);}
+  .net-row:last-child{border-bottom:none;}
+  .net-row .label{color:var(--muted);font-size:11px;}
+  .net-row .val{color:var(--accent);font-family:var(--font-mono);font-size:11px;}
+  .net-row .val.green{color:var(--accent2);}
+  .cam-list{display:flex;flex-direction:column;gap:6px;}
+  .cam-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);cursor:pointer;transition:border-color .2s,background .2s;}
+  .cam-item:hover,.cam-item.active{border-color:var(--accent);background:rgba(0,200,255,0.05);}
+  .cam-thumb{width:40px;height:30px;background:#000;border-radius:3px;position:relative;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--muted);}
+  .cam-info{flex:1;min-width:0;}
+  .cam-name{font-size:13px;font-weight:600;color:#fff;}
+  .cam-ip{font-size:10px;color:var(--muted);font-family:var(--font-mono);}
+  .cam-status{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--online);margin-top:2px;}
+  .sensor-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .sensor-card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px;text-align:center;}
+  .sensor-val{font-size:18px;font-weight:700;font-family:var(--font-mono);line-height:1;}
+  .sensor-val.blue{color:var(--accent);}
+  .sensor-val.green{color:var(--accent2);}
+  .sensor-val.warn{color:var(--warn);}
+  .sensor-val.ok{color:#aaa;}
+  .sensor-unit{font-size:10px;color:var(--muted);margin-top:2px;}
+  .sensor-label{font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:4px;}
+
+  /* MAIN GRID */
+  .main-content{background:#050a10;display:flex;flex-direction:column;overflow:hidden;}
+  .view-toolbar{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+  .view-btns{display:flex;gap:6px;}
+  .view-btn{padding:4px 14px;font-size:12px;letter-spacing:1px;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--muted);cursor:pointer;font-family:var(--font-ui);font-weight:600;transition:all .2s;}
+  .view-btn.active,.view-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,200,255,0.08);}
+  .rec-badge{display:flex;align-items:center;gap:6px;font-size:11px;font-family:var(--font-mono);color:var(--danger);}
+  .cam-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;padding:3px;}
+  .cam-cell{position:relative;background:#000;border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:border-color .2s;}
+  .cam-cell:hover{border-color:var(--accent);}
+  .cam-feed{position:absolute;inset:0;}
+  .cam-feed canvas{width:100%;height:100%;display:block;}
+  .cam-overlay{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;}
+  .cam-top{display:flex;justify-content:space-between;align-items:flex-start;padding:8px;}
+  .cam-label{background:rgba(0,0,0,0.7);border:1px solid var(--border);border-radius:3px;padding:3px 8px;font-size:11px;font-family:var(--font-mono);color:#fff;letter-spacing:1px;backdrop-filter:blur(4px);}
+  .cam-rec{display:flex;align-items:center;gap:5px;background:rgba(255,59,59,0.15);border:1px solid rgba(255,59,59,0.4);border-radius:3px;padding:3px 8px;font-size:10px;font-family:var(--font-mono);color:var(--danger);}
+  .cam-bottom{padding:8px;display:flex;justify-content:space-between;align-items:flex-end;}
+  .cam-meta{display:flex;flex-direction:column;gap:2px;}
+  .cam-ts{font-size:10px;font-family:var(--font-mono);color:rgba(200,223,240,0.7);}
+  .cam-res{font-size:9px;font-family:var(--font-mono);color:var(--muted);}
+  .cam-corner{width:40px;height:40px;position:relative;}
+  .cam-corner::before{content:'';position:absolute;bottom:0;right:0;width:14px;height:14px;border-right:1.5px solid var(--accent);border-bottom:1.5px solid var(--accent);opacity:0.6;}
+  .reticle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;opacity:0.12;pointer-events:none;}
+  .reticle::before,.reticle::after{content:'';position:absolute;background:var(--accent);}
+  .reticle::before{left:50%;top:0;bottom:0;width:1px;margin-left:-0.5px;}
+  .reticle::after{top:50%;left:0;right:0;height:1px;margin-top:-0.5px;}
+  @keyframes motion-alert{0%,100%{box-shadow:inset 0 0 0 0 transparent}50%{box-shadow:inset 0 0 0 3px rgba(255,140,0,0.5)}}
+  .cam-cell.motion{animation:motion-alert 1s ease-in-out 3;}
+  .connect-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(0,0,0,0.82);}
+  .connect-icon{font-size:28px;color:var(--muted);}
+  .connect-text{font-size:12px;font-family:var(--font-mono);color:var(--muted);text-align:center;line-height:1.6;}
+  .rtsp-url{font-size:9px;color:var(--accent);opacity:0.7;}
+  .connect-btn{padding:6px 18px;border:1px solid var(--accent);border-radius:4px;background:rgba(0,200,255,0.1);color:var(--accent);font-family:var(--font-ui);font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;pointer-events:all;transition:background .2s;}
+  .connect-btn:hover{background:rgba(0,200,255,0.22);}
+
+  /* SIDEBAR RIGHT */
+  .sidebar-right{background:var(--surface);border-left:1px solid var(--border);padding:16px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
+  .event-log{display:flex;flex-direction:column;gap:4px;}
+  .event-item{background:var(--card);border-left:2px solid var(--border);border-radius:0 4px 4px 0;padding:6px 8px;font-size:11px;animation:fadeIn .4s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateX(8px)}to{opacity:1}}
+  .event-item.info{border-color:var(--accent);}
+  .event-item.warn{border-color:var(--warn);}
+  .event-item.motion{border-color:var(--accent2);}
+  .event-item.err{border-color:var(--danger);}
+  .event-time{font-family:var(--font-mono);font-size:9px;color:var(--muted);}
+  .event-msg{color:var(--text);margin-top:1px;line-height:1.3;}
+  .bw-chart{position:relative;height:60px;}
+  .bw-chart canvas{width:100%;height:100%;}
+  .bw-label{position:absolute;top:0;right:0;font-size:10px;font-family:var(--font-mono);color:var(--accent);}
+  .vpn-block{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px 12px;}
+  .vpn-peer{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(26,48,80,0.6);font-size:11px;}
+  .vpn-peer:last-child{border-bottom:none;}
+  .vpn-peer-info{flex:1;}
+  .vpn-peer-name{color:var(--text);font-weight:600;}
+  .vpn-peer-ip{color:var(--muted);font-size:10px;font-family:var(--font-mono);}
+  .vpn-latency{font-family:var(--font-mono);font-size:11px;color:var(--accent2);}
+  ::-webkit-scrollbar{width:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+  .statusbar{position:fixed;bottom:0;left:0;right:0;height:24px;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:24px;font-size:10px;font-family:var(--font-mono);color:var(--muted);z-index:100;}
+  .statusbar .accent{color:var(--accent);}
+  .statusbar .green{color:var(--accent2);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon"></div>
+    <div class="logo-text">
+      <h1>SMART CITY</h1>
+      <p>CCTV CONTROL CENTER</p>
+    </div>
+  </div>
+  <div class="header-center">
+    <span>WireGuard VPN</span> · 10.0.0.1/24 &nbsp;|&nbsp; ROS <span>v7.22</span><br>
+    <span>Master:</span> 192.168.9.1/24 &nbsp;·&nbsp; <span>Child:</span> 10.10.10.1/24
+  </div>
+  <div class="header-right">
+    <div class="badge-vpn"><div class="dot green"></div>VPN ACTIVE · 10.0.0.2</div>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- SIDEBAR LEFT -->
+  <div class="sidebar-left">
+    <div>
+      <div class="section-title">Network Info</div>
+      <div class="net-block">
+        <div class="net-row"><span class="label">Master IP</span><span class="val">192.168.9.1</span></div>
+        <div class="net-row"><span class="label">WAN Master</span><span class="val">192.168.1.100</span></div>
+        <div class="net-row"><span class="label">WAN Speed</span><span class="val">1000/500M</span></div>
+        <div class="net-row"><span class="label">Child LAN</span><span class="val">10.10.10.1</span></div>
+        <div class="net-row"><span class="label">WAN Child</span><span class="val green">DHCP</span></div>
+        <div class="net-row"><span class="label">WAN Speed</span><span class="val">300/300M</span></div>
+        <div class="net-row"><span class="label">VPN Tunnel</span><span class="val green">10.0.0.0/24</span></div>
+        <div class="net-row"><span class="label">RouterOS</span><span class="val">v7.22</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="section-title">Cameras Online</div>
+      <div class="cam-list" id="camList"></div>
+    </div>
+    <div>
+      <div class="section-title">Sensors</div>
+      <div class="sensor-grid">
+        <div class="sensor-card"><div class="sensor-val blue" id="sTemp">--</div><div class="sensor-unit">°C</div><div class="sensor-label">TEMP</div></div>
+        <div class="sensor-card"><div class="sensor-val green" id="sHum">--</div><div class="sensor-unit">%RH</div><div class="sensor-label">HUMIDITY</div></div>
+        <div class="sensor-card"><div class="sensor-val warn" id="sPM">--</div><div class="sensor-unit">µg/m³</div><div class="sensor-label">PM2.5</div></div>
+        <div class="sensor-card"><div class="sensor-val ok" id="sTraffic">--</div><div class="sensor-unit">veh/hr</div><div class="sensor-label">TRAFFIC</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="view-toolbar">
+      <div class="view-btns">
+        <button class="view-btn active" onclick="setLayout('2x2',this)">2×2</button>
+        <button class="view-btn" onclick="setLayout('full',this)">Full</button>
+        <button class="view-btn" onclick="setLayout('1+3',this)">1+3</button>
+      </div>
+      <div style="font-size:11px;font-family:var(--font-mono);color:var(--muted)">RTSP → go2rtc → WebRTC → Browser</div>
+      <div class="rec-badge"><div class="dot red" style="width:8px;height:8px;animation:pulse .8s infinite"></div>REC ALL</div>
+    </div>
+    <div class="cam-grid" id="camGrid"></div>
+  </div>
+
+  <!-- SIDEBAR RIGHT -->
+  <div class="sidebar-right">
+    <div>
+      <div class="section-title">VPN Peers</div>
+      <div class="vpn-block">
+        <div class="vpn-peer"><div class="dot green"></div><div class="vpn-peer-info"><div class="vpn-peer-name">Master (Rb5009)</div><div class="vpn-peer-ip">10.0.0.1 · 192.168.9.1</div></div><div class="vpn-latency">1ms</div></div>
+        <div class="vpn-peer"><div class="dot green"></div><div class="vpn-peer-info"><div class="vpn-peer-name">Child (HAP AC)</div><div class="vpn-peer-ip">10.0.0.2 · 10.10.10.1</div></div><div class="vpn-latency" id="vpnLat">--ms</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="section-title">Bandwidth</div>
+      <div class="bw-chart"><canvas id="bwCanvas"></canvas><div class="bw-label" id="bwVal">0 Mbps</div></div>
+    </div>
+    <div>
+      <div class="section-title">Event Log</div>
+      <div class="event-log" id="eventLog"></div>
+    </div>
+    <div>
+      <div class="section-title">RTSP Info</div>
+      <div class="net-block">
+        <div class="net-row"><span class="label">User</span><span class="val green">admin</span></div>
+        <div class="net-row"><span class="label">Pass</span><span class="val">P@ssw0rd2025</span></div>
+        <div class="net-row"><span class="label">Port</span><span class="val">554</span></div>
+        <div class="net-row"><span class="label">Codec</span><span class="val">H.264</span></div>
+        <div class="net-row"><span class="label">Proxy</span><span class="val green">go2rtc</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="statusbar">
+  <span><div class="dot green" style="width:6px;height:6px;display:inline-block;margin-right:5px"></div><span class="green">4/4 ONLINE</span></span>
+  <span>VPN: <span class="accent">CONNECTED</span></span>
+  <span>REC: <span style="color:var(--danger)">ACTIVE</span></span>
+  <span id="sbDate" class="accent"></span>
+  <span style="margin-left:auto">Smart City CCTV v1.0 · MikroTik RouterOS 7.22</span>
+</div>
+
+<script>
+const CAMS=[
+  {id:1,name:'CAM-01',ip:'10.10.10.11',port:554,loc:'ทางเข้าหลัก',res:'1080p',poe:1},
+  {id:2,name:'CAM-02',ip:'10.10.10.12',port:554,loc:'จุดจราจร A',res:'1080p',poe:2},
+  {id:3,name:'CAM-03',ip:'10.10.10.13',port:554,loc:'ลานจอดรถ',res:'2MP',poe:3},
+  {id:4,name:'CAM-04',ip:'10.10.10.14',port:554,loc:'ฉุกเฉิน',res:'1080p',poe:4},
+];
+const USER='admin',PASS='P@ssw0rd2025';
+
+// Sidebar list
+const camListEl=document.getElementById('camList');
+CAMS.forEach(c=>{
+  camListEl.innerHTML+=`<div class="cam-item active"><div class="cam-thumb">📹</div><div class="cam-info"><div class="cam-name">${c.name}</div><div class="cam-ip">${c.ip}</div><div class="cam-status"><div class="dot green" style="width:5px;height:5px"></div>ONLINE · POE-${c.poe}</div></div></div>`;
+});
+
+// Camera grid
+function buildGrid(){
+  const grid=document.getElementById('camGrid');
+  grid.innerHTML='';
+  CAMS.forEach(c=>{
+    const rtsp=`rtsp://${USER}:${PASS}@${c.ip}:${c.port}/stream1`;
+    grid.innerHTML+=`
+    <div class="cam-cell" id="cell${c.id}">
+      <div class="cam-feed"><canvas id="noise${c.id}" style="width:100%;height:100%;display:block"></canvas></div>
+      <div class="connect-overlay" id="ov${c.id}">
+        <div class="connect-icon">📷</div>
+        <div class="connect-text">${c.name} · ${c.loc}<br><span class="rtsp-url">${rtsp}</span></div>
+        <button class="connect-btn" onclick="openRTSP(${c.id})">▶ เชื่อมต่อ / Info</button>
+        <div style="font-size:9px;color:var(--muted);font-family:var(--font-mono);margin-top:4px">ต้องการ go2rtc หรือ MediaMTX</div>
+      </div>
+      <div class="cam-overlay">
+        <div class="cam-top">
+          <div class="cam-label">${c.name} · ${c.loc}</div>
+          <div class="cam-rec"><div class="dot red" style="width:6px;height:6px;animation:pulse .8s infinite"></div>REC</div>
+        </div>
+        <div class="cam-bottom">
+          <div class="cam-meta"><div class="cam-ts" id="ts${c.id}">--:--:--</div><div class="cam-res">${c.res} · RTSP:${c.port}</div></div>
+          <div class="cam-corner"></div>
+        </div>
+      </div>
+      <div class="reticle"></div>
+    </div>`;
+  });
+  CAMS.forEach(c=>startNoise(c.id));
+}
+
+function startNoise(id){
+  const canvas=document.getElementById('noise'+id);
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  function resize(){canvas.width=canvas.offsetWidth||320;canvas.height=canvas.offsetHeight||240;}
+  resize();new ResizeObserver(resize).observe(canvas);
+  let t=0;
+  function draw(){
+    const w=canvas.width,h=canvas.height;
+    ctx.fillStyle='#050c14';ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle='rgba(0,200,255,0.06)';ctx.lineWidth=0.5;
+    const gs=32;
+    for(let x=0;x<w;x+=gs){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+    for(let y=0;y<h;y+=gs){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+    const sy=((t*0.4)%(h+40))-20;
+    const g=ctx.createLinearGradient(0,sy-15,0,sy+15);
+    g.addColorStop(0,'transparent');g.addColorStop(0.5,'rgba(0,200,255,0.07)');g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;ctx.fillRect(0,sy-15,w,30);
+    const img=ctx.getImageData(0,0,w,h);const d=img.data;
+    for(let i=0;i<200;i++){const px=Math.random()*w|0,py=Math.random()*h|0,idx=(py*w+px)*4,v=Math.random()*35;d[idx]=v;d[idx+1]=v+5;d[idx+2]=v+10;d[idx+3]=35;}
+    ctx.putImageData(img,0,0);
+    ctx.strokeStyle='rgba(0,200,255,0.25)';ctx.lineWidth=1.5;
+    const m=10,bl=16;
+    [[m,m],[w-m,m],[m,h-m],[w-m,h-m]].forEach(([cx,cy],i)=>{
+      const sx=i%2===0?1:-1,sy=i<2?1:-1;
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+sx*bl,cy);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx,cy+sy*bl);ctx.stroke();
+    });
+    t++;requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+function openRTSP(id){
+  const c=CAMS.find(x=>x.id===id);
+  alert('RTSP URL:\nrtsp://admin:P@ssw0rd2025@'+c.ip+':554/stream1\n\nวิธีดูใน Browser (ฝั่งแม่):\n1. ติดตั้ง go2rtc: https://github.com/AlexxIT/go2rtc\n2. config.yaml:\n   streams:\n     cam'+id+': rtsp://admin:P@ssw0rd2025@'+c.ip+':554/stream1\n3. เปิด http://192.168.9.1:1984/\n\nหรือ VLC: vlc rtsp://admin:P@ssw0rd2025@'+c.ip+':554/stream1');
+}
+
+function setLayout(mode,btn){
+  document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const g=document.getElementById('camGrid');
+  if(mode==='2x2'){g.style.gridTemplateColumns='1fr 1fr';g.style.gridTemplateRows='1fr 1fr';}
+  else if(mode==='full'){g.style.gridTemplateColumns='1fr';g.style.gridTemplateRows='1fr';}
+  else{g.style.gridTemplateColumns='2fr 1fr';g.style.gridTemplateRows='1fr 1fr';}
+}
+
+function updateClock(){
+  const now=new Date();
+  const t=now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  const d=now.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'});
+  document.getElementById('clock').textContent=t;
+  document.getElementById('sbDate').textContent=d;
+  CAMS.forEach(c=>{const el=document.getElementById('ts'+c.id);if(el)el.textContent=t;});
+}
+setInterval(updateClock,1000);updateClock();
+
+function updateSensors(){
+  document.getElementById('sTemp').textContent=(28+Math.random()*3).toFixed(1);
+  document.getElementById('sHum').textContent=(60+Math.random()*10).toFixed(0);
+  document.getElementById('sPM').textContent=(35+Math.random()*20).toFixed(0);
+  document.getElementById('sTraffic').textContent=(120+Math.random()*80).toFixed(0);
+  document.getElementById('vpnLat').textContent=(8+Math.random()*12).toFixed(0)+'ms';
+}
+setInterval(updateSensors,3000);updateSensors();
+
+const bwHist=Array(60).fill(0);
+function updateBW(){
+  const mbps=15+Math.random()*25;
+  bwHist.push(mbps);bwHist.shift();
+  document.getElementById('bwVal').textContent=mbps.toFixed(1)+' Mbps';
+  const canvas=document.getElementById('bwCanvas');
+  canvas.width=canvas.offsetWidth||160;canvas.height=canvas.offsetHeight||60;
+  const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,max=60;
+  ctx.clearRect(0,0,w,h);
+  ctx.beginPath();
+  bwHist.forEach((v,i)=>{const x=i*(w/59),y=h-(v/max)*h;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  const gr=ctx.createLinearGradient(0,0,0,h);
+  gr.addColorStop(0,'rgba(0,200,255,0.7)');gr.addColorStop(1,'rgba(0,200,255,0)');
+  ctx.strokeStyle='#00c8ff';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();ctx.fillStyle=gr;ctx.fill();
+}
+setInterval(updateBW,1500);updateBW();
+
+function addEvent(type,msg){
+  const log=document.getElementById('eventLog');
+  const t=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const div=document.createElement('div');
+  div.className='event-item '+type;
+  div.innerHTML='<div class="event-time">'+t+'</div><div class="event-msg">'+msg+'</div>';
+  log.prepend(div);
+  while(log.children.length>14)log.removeChild(log.lastChild);
+}
+const initEvents=[
+  ['info','ระบบเริ่มต้น · RouterOS 7.22'],
+  ['info','WireGuard VPN Connected · 10.0.0.0/24'],
+  ['motion','CAM-01 ตรวจพบการเคลื่อนไหว'],
+  ['info','CAM-01 ถึง CAM-04 Online'],
+  ['warn','PM2.5 สูงกว่าค่ามาตรฐาน'],
+  ['motion','CAM-03 ตรวจพบยานพาหนะ'],
+];
+initEvents.forEach((e,i)=>setTimeout(()=>addEvent(e[0],e[1]),i*700));
+
+const rndEv=[
+  ['motion','CAM-01 ตรวจพบการเคลื่อนไหว'],
+  ['info','WireGuard Handshake OK'],
+  ['warn','แบนด์วิดท์สูงกว่า 80%'],
+  ['motion','CAM-03 ตรวจพบบุคคล'],
+  ['info','Snapshot บันทึก NVR สำเร็จ'],
+  ['warn','Sensor PM2.5 เกิน 50 µg/m³'],
+  ['motion','CAM-02 ตรวจพบจราจรหนาแน่น'],
+  ['info','CAM-04 Snapshot ถ่ายสำเร็จ'],
+];
+setInterval(()=>{
+  const e=rndEv[Math.floor(Math.random()*rndEv.length)];
+  addEvent(e[0],e[1]);
+  if(e[0]==='motion'){
+    const cId=Math.ceil(Math.random()*4);
+    const cell=document.getElementById('cell'+cId);
+    if(cell){cell.classList.add('motion');setTimeout(()=>cell.classList.remove('motion'),3100);}
+  }
+},5000);
+
+buildGrid();
+</script>
+</body>
+</html>
