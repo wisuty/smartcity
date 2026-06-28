@@ -1,81 +1,3 @@
-
-
-demo6.html
-ไฟล์
-ดูโครงสร้างไฟนี้หน่อย
-
-โครงสร้างไฟล์นี้เป็นเว็บเพจแดชบอร์ดของเทศบาลบัวงาม จ.ราชบุรี ในแพลตฟอร์ม SmartGov ตัวโค้ดมีโครงสร้างครอบคลุมทั้งส่วนล็อกอิน, ท็อปบาร์, แผงด้านข้าง (Sidebar) พร้อมเมนูนำทางไปยังหน้าต่าง ๆ เช่นภาพรวม, แผนที่, เซนเซอร์, กล้อง CCTV, การแจ้งเตือน, ระบบกระจายเสียง และการตั้งค่า มีการใช้ธีมสีที่ปรับได้, แผนที่แสดง Node, กราฟเซ็นเซอร์ และหน้าดูกล้องแบบอินเทอร์แอคทีฟ โค้ดนี้ยังมีการแสดงข้อมูลสถานะ, การแจ้งเตือนแบบย่อ, การควบคุมเสียง และหน้าตั้งค่าระบบด้วยรายละเอียดครบถ้วน!
-
-
-
-คลัง
-/
-demo6.html
-การกระทำเพิ่มเติม
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -140,3 +62,870 @@ body{background:var(--bg);color:var(--text);font-family:var(--thai);min-height:1
 .rb-superadmin{background:rgba(45,212,191,.12);color:var(--teal);border:1px solid rgba(45,212,191,.25)}
 .rb-admin{background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.25)}
 .rb-user{background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.25)}
+.tb-uname{font-size:13px;color:var(--text2)}
+.btn-out{padding:5px 12px;background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--text3);font-size:12px;cursor:pointer;font-family:var(--thai);transition:.2s}
+.btn-out:hover{border-color:var(--red);color:var(--red)}
+
+/* LAYOUT */
+#app{display:none}
+.layout{display:flex;min-height:calc(100vh - 54px)}
+
+/* SIDEBAR */
+.sidebar{width:var(--sb-w);background:var(--panel);border-right:1px solid var(--border);flex-shrink:0;position:sticky;top:54px;height:calc(100vh - 54px);overflow:hidden;transition:width .25s ease;display:flex;flex-direction:column}
+.sidebar.collapsed{width:var(--sb-w-col)}
+.sidebar.collapsed .nav-txt,.sidebar.collapsed .nav-lbl,.sidebar.collapsed .nbadge{display:none}
+.sidebar.collapsed .nav{justify-content:center;padding:10px 0}
+.sidebar.collapsed .nav-ic{width:auto;font-size:18px}
+.nav-lbl{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:1.2px;padding:10px 16px 5px;font-family:var(--mono);white-space:nowrap}
+.nav{display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;color:var(--text2);font-size:14px;border-left:2px solid transparent;transition:.15s;user-select:none;white-space:nowrap}
+.nav:hover{background:var(--panel2);color:var(--text)}
+.nav.on{background:rgba(45,212,191,.07);color:var(--teal);border-left-color:var(--teal)}
+.sidebar.collapsed .nav.on{border-left-color:transparent;border-right:2px solid var(--teal)}
+.nav-ic{width:20px;text-align:center;font-size:15px;flex-shrink:0}
+.nav-txt{flex:1}.nbadge{background:var(--red);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px}
+
+/* MAIN */
+.main{flex:1;padding:18px;overflow-y:auto;min-width:0}
+.page{display:none}.page.on{display:block}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.pt{font-size:19px;font-weight:700}.ps{font-size:13px;color:var(--text3);margin-top:3px}
+
+/* STAT GRID */
+.sg{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px}
+.sc{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:13px;position:relative;overflow:hidden;transition:.2s;cursor:pointer}
+.sc:hover{border-color:var(--border2);transform:translateY(-1px)}
+.sc.active-sensor{border-color:var(--teal);box-shadow:0 0 0 2px rgba(45,212,191,.2)}
+.sc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.sc.t::after{background:linear-gradient(90deg,var(--teal),transparent)}
+.sc.g::after{background:linear-gradient(90deg,var(--green),transparent)}
+.sc.y::after{background:linear-gradient(90deg,var(--yellow),transparent)}
+.sc.r::after{background:linear-gradient(90deg,var(--red),transparent)}
+.sc.p::after{background:linear-gradient(90deg,var(--purple),transparent)}
+.sc.o::after{background:linear-gradient(90deg,var(--orange),transparent)}
+.sc-lbl{font-size:11px;color:var(--text3);margin-bottom:5px;font-weight:500}
+.sc-val{font-size:22px;font-weight:700;font-family:var(--mono);line-height:1}
+.sc-val.t{color:var(--teal)}.sc-val.g{color:var(--green)}.sc-val.y{color:var(--yellow)}.sc-val.r{color:var(--red)}.sc-val.p{color:var(--purple)}.sc-val.o{color:var(--orange)}
+.sc-sub{font-size:10px;color:var(--text3);margin-top:4px}
+.sc-ico{position:absolute;right:10px;top:10px;font-size:18px;opacity:.13}
+.sc-hint{position:absolute;bottom:5px;right:7px;font-size:9px;color:var(--text3);font-family:var(--mono)}
+
+/* DASHBOARD BODY */
+.db-body{display:grid;grid-template-columns:1fr 295px;gap:14px;align-items:start}
+
+/* MAP */
+.map-panel{background:var(--panel);border:1px solid var(--border);border-radius:13px;overflow:hidden}
+.mp-head{padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.mp-title{font-size:14px;font-weight:600}
+.mp-pills{display:flex;gap:5px;flex-wrap:wrap}
+.mp-sensor-label{font-size:11px;color:var(--teal);font-family:var(--mono);padding:2px 8px;background:rgba(45,212,191,.1);border-radius:6px}
+#map-dashboard{height:calc(100vh - 318px);min-height:340px}
+#map-full{height:500px}
+#map-cctv{height:calc(100vh - 200px);min-height:400px}
+.leaflet-container{font-family:var(--thai) !important}
+.map-label{background:var(--panel);border:1px solid var(--border2);border-radius:7px;padding:3px 7px;font-family:var(--mono);font-size:11px;font-weight:600;white-space:nowrap;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.map-label.hot{color:var(--red);border-color:var(--red)}.map-label.warn{color:var(--yellow);border-color:var(--yellow)}.map-label.ok{color:var(--green);border-color:var(--green)}.map-label.blue{color:var(--blue);border-color:var(--blue)}.map-label.purple{color:var(--purple);border-color:var(--purple)}.map-label.orange{color:var(--orange);border-color:var(--orange)}
+
+/* camera map marker */
+.cam-marker{background:var(--panel2);border:2px solid var(--teal);border-radius:8px;padding:4px 7px;font-size:11px;color:var(--text);font-family:var(--mono);cursor:pointer;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.4);transition:.2s}
+.cam-marker:hover,.cam-marker.active{background:var(--teal);color:#0a1a18;border-color:var(--teal)}
+.cam-marker.offline{border-color:var(--red);color:var(--red)}
+
+/* popup */
+.lf-popup .leaflet-popup-content-wrapper{background:var(--panel);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:var(--thai);font-size:13px;box-shadow:0 12px 40px rgba(0,0,0,.4);min-width:190px}
+.lf-popup .leaflet-popup-tip{background:var(--panel)}
+.lf-popup .leaflet-popup-content{margin:13px 15px;line-height:2}
+.pu-h{font-weight:700;font-size:14px;color:var(--teal);margin-bottom:6px;border-bottom:1px solid var(--border);padding-bottom:6px}
+.pu-r{display:flex;justify-content:space-between;font-size:12px}
+.pu-k{color:var(--text3)}.pu-v{font-family:var(--mono);font-weight:600}
+
+/* NODE LIST RIGHT */
+.node-right{display:flex;flex-direction:column;gap:10px}
+.nr-box{background:var(--panel);border:1px solid var(--border);border-radius:13px;overflow:hidden}
+.nr-h{padding:10px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.nr-t{font-size:13px;font-weight:600}
+.node-list{max-height:calc(100vh - 360px);overflow-y:auto}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(30,45,69,.4);cursor:pointer;transition:.15s}
+.ni:last-child{border-bottom:none}
+.ni:hover{background:var(--panel2)}.ni.sel{background:rgba(45,212,191,.06)}
+.ni-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dig{background:var(--green);box-shadow:0 0 5px var(--green)}.diy{background:var(--yellow);box-shadow:0 0 5px var(--yellow)}.dir{background:var(--red);box-shadow:0 0 5px var(--red)}
+.ni-id{font-family:var(--mono);font-size:10px;color:var(--text3);width:28px;flex-shrink:0}
+.ni-name{font-size:12px;flex:1;color:var(--text2)}
+.ni-val{font-family:var(--mono);font-size:12px;font-weight:600}
+.hot{color:var(--red)}.warm{color:var(--yellow)}.cool{color:var(--teal)}
+.ni-door{font-size:11px;width:16px;text-align:right}
+.al-mini{display:flex;align-items:flex-start;gap:9px;padding:9px 12px;border-bottom:1px solid rgba(30,45,69,.4);font-size:12px}
+.al-mini:last-child{border-bottom:none}
+.al-mini.err{border-left:2px solid var(--red)}.al-mini.warn{border-left:2px solid var(--yellow)}
+
+/* PANEL */
+.pn{background:var(--panel);border:1px solid var(--border);border-radius:13px;overflow:hidden;margin-bottom:14px}
+.pn-h{padding:11px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pn-t{font-size:14px;font-weight:600}
+.pn-b{padding:14px}
+.pill{font-size:10px;padding:2px 8px;border-radius:20px;font-family:var(--mono)}
+.pill-t{background:rgba(45,212,191,.1);color:var(--teal)}.pill-g{background:rgba(74,222,128,.1);color:var(--green)}.pill-r{background:rgba(248,113,113,.1);color:var(--red)}.pill-y{background:rgba(251,191,36,.1);color:var(--yellow)}.pill-p{background:rgba(167,139,250,.1);color:var(--purple)}.pill-o{background:rgba(251,146,60,.1);color:var(--orange)}
+.tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10.5px;font-family:var(--mono)}
+.tg{background:rgba(74,222,128,.1);color:var(--green)}.ty{background:rgba(251,191,36,.1);color:var(--yellow)}.tr{background:rgba(248,113,113,.1);color:var(--red)}.tt{background:rgba(45,212,191,.1);color:var(--teal)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.divider{height:1px;background:var(--border);margin:11px 0}
+.btn-ghost{padding:7px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-family:var(--thai);font-size:13px;cursor:pointer;transition:.2s}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text)}
+
+/* ══ SENSOR PAGE ══ */
+.snr-top-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+.snr-c{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:13px;text-align:center;transition:.2s}
+.snr-c:hover{border-color:var(--border2)}
+.snr-id{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:2px}
+.snr-nm{font-size:11px;color:var(--text2);margin-bottom:7px}
+.snr-tmp{font-size:20px;font-weight:700;font-family:var(--mono)}
+.snr-hum{font-size:12px;color:var(--blue);margin-top:2px;font-family:var(--mono)}
+.snr-pm{font-size:12px;color:var(--purple);margin-top:2px;font-family:var(--mono)}
+.snr-door{font-size:11px;margin-top:3px}
+.snr-ts{font-size:10px;color:var(--text3);margin-top:3px;font-family:var(--mono)}
+
+/* chart containers */
+.chart-wrap{position:relative;width:100%;height:140px}
+.chart-wrap canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
+.chart-legend{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.cl-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.cl-dot{width:10px;height:3px;border-radius:2px;flex-shrink:0}
+
+/* ══ CAMERA PAGE ══ */
+.cam-page-body{display:grid;grid-template-columns:1fr 380px;gap:14px;height:calc(100vh - 160px);min-height:500px}
+.cam-map-panel{background:var(--panel);border:1px solid var(--border);border-radius:13px;overflow:hidden;display:flex;flex-direction:column}
+.cam-right-panel{background:var(--panel);border:1px solid var(--border);border-radius:13px;overflow:hidden;display:flex;flex-direction:column}
+.cam-right-head{padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.cam-right-body{flex:1;overflow-y:auto;padding:10px}
+.cam-grid-inner{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cam-c{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:.2s}
+.cam-c:hover{border-color:var(--teal)}
+.cam-c.active{border-color:var(--teal);box-shadow:0 0 0 2px rgba(45,212,191,.2)}
+.cam-prev{height:90px;display:flex;align-items:center;justify-content:center;font-size:26px;position:relative;background:linear-gradient(135deg,var(--bg2),var(--bg3))}
+.cam-rec{position:absolute;top:5px;right:5px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;font-family:var(--mono);animation:blink 2s infinite}
+.cam-off{position:absolute;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--red)}
+.cam-inf{padding:6px 9px}
+.cam-name{font-size:11px;font-weight:600}
+.cam-loc{font-size:10px;color:var(--text3);margin-top:1px}
+
+/* selected cam viewer */
+.cam-viewer{background:var(--bg2);border-radius:10px;margin-bottom:10px;overflow:hidden;border:1px solid var(--border2)}
+.cam-viewer-screen{height:160px;display:flex;align-items:center;justify-content:center;font-size:40px;position:relative;background:linear-gradient(135deg,#050c18,#0a1830)}
+.cam-viewer-info{padding:10px 12px;display:flex;align-items:center;gap:10px}
+.cvi-name{font-size:13px;font-weight:600;flex:1}
+.cvi-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-family:var(--mono)}
+
+/* node selector row in camera */
+.node-sel-row{display:flex;gap:6px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--border)}
+.node-sel-btn{padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--mono);transition:.15s}
+.node-sel-btn:hover{border-color:var(--border2);color:var(--text)}
+.node-sel-btn.on{border-color:var(--teal);background:rgba(45,212,191,.08);color:var(--teal)}
+.node-sel-btn.offline{border-color:var(--red);color:var(--red)}
+
+/* ALERTS */
+.al-list{display:flex;flex-direction:column;gap:8px}
+.al{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:9px;background:var(--bg2);border-left:3px solid}
+.al.err{border-color:var(--red)}.al.warn{border-color:var(--yellow)}.al.info{border-color:var(--teal)}
+.al-ic{font-size:15px;margin-top:1px;flex-shrink:0}
+.al-txt{font-size:13px;line-height:1.55;flex:1}
+.al-time{font-size:10.5px;color:var(--text3);font-family:var(--mono);white-space:nowrap}
+
+/* AUDIO */
+.zones{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:12px}
+.zone-b{padding:7px 4px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:12px;cursor:pointer;text-align:center;font-family:var(--thai);transition:.15s}
+.zone-b.on{border-color:var(--teal);background:rgba(45,212,191,.07);color:var(--teal)}
+.atypes{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap}
+.at-b{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--thai);transition:.15s}
+.at-b.on{border-color:var(--teal);background:rgba(45,212,191,.07);color:var(--teal)}
+.vol-row{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+.vol-lbl{font-size:12px;color:var(--text2);width:75px;flex-shrink:0}
+input[type=range]{flex:1;height:4px;background:var(--border);border-radius:2px;outline:none;-webkit-appearance:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--teal);cursor:pointer}
+.vol-val{font-family:var(--mono);font-size:13px;color:var(--teal);width:38px}
+.tts-ta{width:100%;padding:10px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:var(--thai);font-size:14px;resize:vertical;min-height:70px;outline:none;transition:.2s;margin-bottom:10px}
+.tts-ta:focus{border-color:var(--teal)}
+.btn-row{display:flex;gap:9px;flex-wrap:wrap}
+.btn-em{padding:9px 16px;border-radius:9px;background:rgba(248,113,113,.1);border:1px solid var(--red);color:var(--red);font-weight:700;font-family:var(--thai);font-size:14px;cursor:pointer}
+.btn-bc{padding:9px 20px;border-radius:9px;background:linear-gradient(135deg,var(--teal),var(--teal2));border:none;color:#fff;font-weight:700;font-family:var(--thai);font-size:14px;cursor:pointer}
+.sched-t{width:100%;font-size:13px}
+.sched-t td{padding:7px 10px;border-bottom:1px solid var(--border)}
+.sched-t td:first-child{font-family:var(--mono);color:var(--teal);width:70px}
+
+/* THEME */
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px}
+.theme-card{border:2px solid var(--border);border-radius:12px;padding:12px 10px;cursor:pointer;text-align:center;transition:.2s;background:var(--bg2)}
+.theme-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.theme-card.active{border-color:var(--teal);background:rgba(45,212,191,.06)}
+.theme-preview{height:38px;border-radius:8px;margin-bottom:6px;display:flex;gap:3px;overflow:hidden;padding:5px}
+.tp-dot{flex:1;border-radius:4px}
+.theme-name{font-size:13px;font-weight:600}.theme-desc{font-size:11px;color:var(--text3);margin-top:2px}
+.sysrow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.sysrow:last-child{border-bottom:none}.sysrow-k{color:var(--text3)}.sysrow-v{font-family:var(--mono);font-size:12px}
+.fw-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg2);border-radius:8px;margin-bottom:6px;font-size:13px}
+.fw-id{font-family:var(--mono);color:var(--teal);width:50px;flex-shrink:0}.fw-nm{flex:1;color:var(--text2);font-size:12px}.fw-ver{font-family:var(--mono);font-size:12px;color:var(--text3)}
+.btn-upd{padding:3px 10px;border-radius:6px;background:rgba(45,212,191,.08);border:1px solid rgba(45,212,191,.2);color:var(--teal);font-size:11px;cursor:pointer;font-family:var(--thai)}
+
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="lcard">
+    <div class="lc-top"><div class="lc-icon">⚡</div><h1>SmartGov Platform</h1><p>เทศบาลตำบลบัวงาม • จ.ราชบุรี</p></div>
+    <div class="rtabs">
+      <button class="rtab on" onclick="setRole('superadmin',this)">SuperAdmin</button>
+      <button class="rtab" onclick="setRole('admin',this)">Admin</button>
+      <button class="rtab" onclick="setRole('user',this)">User</button>
+    </div>
+    <div class="fg"><label>Username</label><input id="lu" value="superadmin"></div>
+    <div class="fg"><label>Password</label><input type="password" id="lp" value="••••••••"></div>
+    <button class="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <div class="demo-hint"><b>superadmin</b> ทั้งจังหวัด &nbsp;|&nbsp; <b>admin</b> เทศบาล &nbsp;|&nbsp; <b>user</b> ดูข้อมูล</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <button class="tb-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="tb-logo"><div class="tb-mark">⚡</div>SmartGov</div>
+    <div class="tb-div"></div>
+    <div class="tb-sub">จ.ราชบุรี › เทศบาลบัวงาม</div>
+    <div class="tb-right">
+      <div class="live-pill"><div class="ldot"></div>LIVE</div>
+      <span class="rbadge rb-superadmin" id="rBadge">SUPERADMIN</span>
+      <span class="tb-uname" id="tUser">สมชาย ใจดี</span>
+      <button class="btn-out" onclick="doLogout()">ออก</button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="sidebar" id="sidebar">
+      <div class="nav-lbl">OVERVIEW</div>
+      <div class="nav on" onclick="gp('dashboard',this)" title="ภาพรวม"><span class="nav-ic">📊</span><span class="nav-txt">ภาพรวม</span></div>
+      <div class="nav" onclick="gp('map',this)" title="แผนที่"><span class="nav-ic">🗺️</span><span class="nav-txt">แผนที่</span></div>
+      <div class="nav-lbl">MONITORING</div>
+      <div class="nav" onclick="gp('sensors',this)" title="Sensor"><span class="nav-ic">🌡️</span><span class="nav-txt">Sensor</span></div>
+      <div class="nav" onclick="gp('cameras',this)" title="กล้อง"><span class="nav-ic">📷</span><span class="nav-txt">กล้อง CCTV</span></div>
+      <div class="nav" onclick="gp('alerts',this)" title="แจ้งเตือน"><span class="nav-ic">🔔</span><span class="nav-txt">แจ้งเตือน</span><span class="nbadge">3</span></div>
+      <div class="nav-lbl">CONTROL</div>
+      <div class="nav" onclick="gp('audio',this)" title="กระจายเสียง"><span class="nav-ic">🔊</span><span class="nav-txt">กระจายเสียง</span></div>
+      <div class="nav" id="navSet" onclick="gp('settings',this)" title="ตั้งค่า"><span class="nav-ic">⚙️</span><span class="nav-txt">ตั้งค่า</span></div>
+    </div>
+
+    <div class="main">
+
+      <!-- ── DASHBOARD ── -->
+      <div class="page on" id="page-dashboard">
+        <div class="ph"><div><div class="pt">ภาพรวมระบบ</div><div class="ps">เทศบาลบัวงาม • อัพเดท <span id="lastUpd">--</span></div></div></div>
+        <div class="sg">
+          <div class="sc t" id="sc-node" onclick="setSensorMode('status')"><div class="sc-ico">📡</div><div class="sc-lbl">Node ออนไลน์</div><div class="sc-val t">9<span style="font-size:13px;color:var(--text3)">/10</span></div><div class="sc-sub">1 ออฟไลน์</div><div class="sc-hint">คลิกแผนที่</div></div>
+          <div class="sc g" id="sc-cam" onclick="setSensorMode('camera')"><div class="sc-ico">📷</div><div class="sc-lbl">กล้องออนไลน์</div><div class="sc-val g">28<span style="font-size:13px;color:var(--text3)">/30</span></div><div class="sc-sub">2 ออฟไลน์</div><div class="sc-hint">คลิกแผนที่</div></div>
+          <div class="sc y" id="sc-temp" onclick="setSensorMode('temp')"><div class="sc-ico">🌡️</div><div class="sc-lbl">อุณหภูมิเฉลี่ย</div><div class="sc-val y" id="avgTmp">--</div><div class="sc-sub">°C ทั้งพื้นที่</div><div class="sc-hint">คลิกแผนที่</div></div>
+          <div class="sc p" id="sc-humid" onclick="setSensorMode('humid')"><div class="sc-ico">💧</div><div class="sc-lbl">ความชื้นเฉลี่ย</div><div class="sc-val p" id="avgHumid">--</div><div class="sc-sub">% RH</div><div class="sc-hint">คลิกแผนที่</div></div>
+          <div class="sc o" id="sc-pm" onclick="setSensorMode('pm25')"><div class="sc-ico">🌫️</div><div class="sc-lbl">PM2.5 เฉลี่ย</div><div class="sc-val o" id="avgPm">--</div><div class="sc-sub">μg/m³</div><div class="sc-hint">คลิกแผนที่</div></div>
+          <div class="sc r" id="sc-alert" onclick="setSensorMode('alert')"><div class="sc-ico">🔔</div><div class="sc-lbl">แจ้งเตือน</div><div class="sc-val r">3</div><div class="sc-sub">รอดำเนินการ</div><div class="sc-hint">คลิกแผนที่</div></div>
+        </div>
+        <div class="db-body">
+          <div class="map-panel">
+            <div class="mp-head">
+              <span class="mp-title">🗺️ แผนที่ Node</span>
+              <div style="display:flex;align-items:center;gap:7px">
+                <span class="mp-sensor-label" id="mapModeLabel">📡 สถานะ Node</span>
+                <div class="mp-pills"><span class="pill pill-g">9 Online</span><span class="pill pill-r">1 Offline</span></div>
+              </div>
+            </div>
+            <div id="map-dashboard"></div>
+          </div>
+          <div class="node-right">
+            <div class="nr-box">
+              <div class="nr-h"><span class="nr-t">สถานะ Node</span><span class="pill pill-t">10 Nodes</span></div>
+              <div class="node-list" id="nodeList"></div>
+            </div>
+            <div class="nr-box">
+              <div class="nr-h"><span class="nr-t">แจ้งเตือน</span><span class="pill pill-r">3</span></div>
+              <div class="al-mini err"><div style="font-size:14px">🔴</div><div><div style="font-size:12px;font-weight:600">Node07 ออฟไลน์</div><div style="font-size:11px;color:var(--text3)">10:45 • ไม่ตอบสนอง 15 นาที</div></div></div>
+              <div class="al-mini warn"><div style="font-size:14px">⚠️</div><div><div style="font-size:12px;font-weight:600">Node03 อุณหภูมิสูง</div><div style="font-size:11px;color:var(--text3)">11:20 • 38.2°C เกินค่ากำหนด</div></div></div>
+              <div class="al-mini warn"><div style="font-size:14px">🚪</div><div><div style="font-size:12px;font-weight:600">Node05 ประตูเปิดนาน</div><div style="font-size:11px;color:var(--text3)">11:35 • เกิน 30 นาที</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MAP PAGE ── -->
+      <div class="page" id="page-map">
+        <div class="ph"><div><div class="pt">แผนที่ Node</div><div class="ps">10 Nodes • เทศบาลบัวงาม อ.ดำเนินสะดวก จ.ราชบุรี</div></div></div>
+        <div class="map-panel"><div class="mp-head"><span class="mp-title">📍 แผนที่ Node ทั้งหมด</span><div class="mp-pills"><span class="pill pill-g">9 Online</span><span class="pill pill-y">1 Alert</span><span class="pill pill-r">1 Offline</span></div></div><div id="map-full"></div></div>
+      </div>
+
+      <!-- ── SENSOR PAGE ── -->
+      <div class="page" id="page-sensors">
+        <div class="ph"><div><div class="pt">ข้อมูล Sensor</div><div class="ps">Real-time • เปรียบเทียบทุก Node 24 ชั่วโมง</div></div><button class="btn-ghost">📥 Export CSV</button></div>
+
+        <!-- Mini cards -->
+        <div class="snr-top-grid" id="snrCards"></div>
+
+        <!-- Chart 1: Temperature -->
+        <div class="pn">
+          <div class="pn-h">
+            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">🌡️</span><span class="pn-t">อุณหภูมิ (°C) — 24 ชั่วโมง</span></div>
+            <span class="pill pill-y">เส้นประ = ค่ามาตรฐาน 35°C</span>
+          </div>
+          <div class="pn-b">
+            <div class="chart-legend" id="legend-temp"></div>
+            <div class="chart-wrap"><canvas id="chart-temp"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Chart 2: Humidity -->
+        <div class="pn">
+          <div class="pn-h">
+            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">💧</span><span class="pn-t">ความชื้นสัมพัทธ์ (%RH) — 24 ชั่วโมง</span></div>
+            <span class="pill pill-p">เส้นประ = สูง 80%</span>
+          </div>
+          <div class="pn-b">
+            <div class="chart-legend" id="legend-humid"></div>
+            <div class="chart-wrap"><canvas id="chart-humid"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Chart 3: PM2.5 -->
+        <div class="pn">
+          <div class="pn-h">
+            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">🌫️</span><span class="pn-t">PM2.5 (μg/m³) — 24 ชั่วโมง</span></div>
+            <div style="display:flex;gap:6px"><span class="pill pill-g">ดี &lt;25</span><span class="pill pill-y">ปานกลาง &lt;50</span><span class="pill pill-r">อันตราย ≥50</span></div>
+          </div>
+          <div class="pn-b">
+            <div class="chart-legend" id="legend-pm"></div>
+            <div class="chart-wrap"><canvas id="chart-pm"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CAMERA PAGE ── -->
+      <div class="page" id="page-cameras">
+        <div class="ph"><div><div class="pt">กล้อง CCTV</div><div class="ps">NVR 32CH Dahua • คลิก Node บนแผนที่เพื่อดูกล้อง</div></div></div>
+        <div class="cam-page-body">
+
+          <!-- LEFT: MAP -->
+          <div class="cam-map-panel">
+            <div class="mp-head" style="flex-shrink:0">
+              <span class="mp-title">📍 เลือก Node บนแผนที่</span>
+              <span class="pill pill-t" id="camSelectedLabel">เลือก Node เพื่อดูกล้อง</span>
+            </div>
+            <!-- Node selector buttons -->
+            <div class="node-sel-row" id="nodeSelRow"></div>
+            <div id="map-cctv" style="flex:1"></div>
+          </div>
+
+          <!-- RIGHT: CAMERA PANEL -->
+          <div class="cam-right-panel">
+            <div class="cam-right-head">
+              <span class="nr-t" id="camPanelTitle">📷 เลือก Node เพื่อดูกล้อง</span>
+              <span class="pill pill-g" id="camOnlinePill">--</span>
+            </div>
+
+            <!-- Selected cam viewer -->
+            <div style="padding:10px 10px 0">
+              <div class="cam-viewer" id="camViewer" style="display:none">
+                <div class="cam-viewer-screen" id="camViewerScreen"></div>
+                <div class="cam-viewer-info">
+                  <span class="cvi-name" id="camViewerName">--</span>
+                  <span class="cvi-badge tg" id="camViewerBadge">LIVE</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="cam-right-body">
+              <div class="cam-grid-inner" id="camGrid"></div>
+              <div id="camEmptyMsg" style="text-align:center;padding:40px 20px;color:var(--text3);font-size:14px">
+                📍 คลิก Node บนแผนที่<br>หรือปุ่มด้านบน<br>เพื่อดูกล้อง
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── ALERTS ── -->
+      <div class="page" id="page-alerts">
+        <div class="ph"><div class="pt">แจ้งเตือน</div></div>
+        <div class="al-list">
+          <div class="al err"><div class="al-ic">🔴</div><div><div class="al-txt"><b>Node07 ออฟไลน์</b> — ไม่ตอบสนองนาน 15 นาที กรุณาตรวจสอบ E50UG และสายแลน</div></div><div class="al-time">10:45:02</div></div>
+          <div class="al warn"><div class="al-ic">🌡️</div><div><div class="al-txt"><b>Node03 อุณหภูมิสูง</b> — วัดได้ 38.2°C เกินค่ากำหนด 35°C</div></div><div class="al-time">11:20:17</div></div>
+          <div class="al warn"><div class="al-ic">🚪</div><div><div class="al-txt"><b>Node05 ประตูเปิดนาน</b> — Magnetic Switch ตรวจพบนานกว่า 30 นาที</div></div><div class="al-time">11:35:44</div></div>
+          <div class="al info"><div class="al-ic">📡</div><div><div class="al-txt"><b>Node02 Firmware อัพเดทสำเร็จ</b> — v1.2.3 → v1.2.4</div></div><div class="al-time">09:15:00</div></div>
+          <div class="al info"><div class="al-ic">🔊</div><div><div class="al-txt"><b>กระจายเสียงสำเร็จ</b> — เพลงชาติ 08:00 น. ครบ 9/10 Node</div></div><div class="al-time">08:00:05</div></div>
+        </div>
+      </div>
+
+      <!-- ── AUDIO ── -->
+      <div class="page" id="page-audio">
+        <div class="ph"><div class="pt">ระบบกระจายเสียง</div></div>
+        <div class="g2">
+          <div>
+            <div class="pn"><div class="pn-h"><span class="pn-t">เลือกพื้นที่</span></div><div class="pn-b"><div style="display:flex;gap:7px;margin-bottom:10px"><button class="at-b on" onclick="selAll()">เลือกทั้งหมด</button><button class="at-b" onclick="clrAll()">ยกเลิก</button></div><div class="zones" id="audioZones"></div></div></div>
+            <div class="pn"><div class="pn-h"><span class="pn-t">Schedule</span></div><div class="pn-b" style="padding:0"><table class="sched-t"><tr><td>08:00</td><td>เพลงชาติไทย</td></tr><tr><td>08:05</td><td>ประกาศข่าวประจำวัน</td></tr><tr><td>12:00</td><td>เพลงสรรเสริญพระบารมี</td></tr><tr><td>17:00</td><td>ประกาศปิดทำการ</td></tr><tr><td>18:00</td><td>เพลงชาติไทย</td></tr></table></div></div>
+          </div>
+          <div class="pn"><div class="pn-h"><span class="pn-t">ควบคุมการกระจายเสียง</span></div><div class="pn-b">
+            <div style="font-size:12px;color:var(--text3);margin-bottom:10px">ประเภทเสียง</div>
+            <div class="atypes"><button class="at-b on" onclick="setAt('file',this)">📁 ไฟล์</button><button class="at-b" onclick="setAt('live',this)">🎙️ Live</button><button class="at-b" onclick="setAt('tts',this)">⌨️ TTS</button></div>
+            <div id="inp-file" style="margin-bottom:12px"><div style="padding:14px;border:1px dashed var(--border);border-radius:9px;text-align:center;color:var(--text3);font-size:13px;cursor:pointer">📁 คลิกเลือกไฟล์ .mp3 .wav</div></div>
+            <div id="inp-tts" style="display:none;margin-bottom:12px"><textarea class="tts-ta" placeholder="พิมพ์ข้อความที่ต้องการกระจาย..."></textarea></div>
+            <div id="inp-live" style="display:none;margin-bottom:12px"><div style="padding:12px;background:var(--bg2);border-radius:9px;text-align:center;color:var(--green);font-size:13px">🎙️ พร้อมรับสัญญาณ Live</div></div>
+            <div class="vol-row"><span class="vol-lbl">ระดับเสียง</span><input type="range" min="0" max="100" value="80" oninput="document.getElementById('vv').textContent=this.value+'%'"><span class="vol-val" id="vv">80%</span></div>
+            <div class="divider"></div>
+            <div class="btn-row"><button class="btn-em">🚨 EMERGENCY</button><button class="btn-bc" onclick="startBC()">▶ กระจายเสียง</button><button class="btn-ghost" id="stopBtn" style="display:none" onclick="stopBC()">■ หยุด</button></div>
+            <div class="divider"></div><div id="audioSt"></div>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS ── -->
+      <div class="page" id="page-settings">
+        <div class="ph"><div class="pt">ตั้งค่าระบบ</div></div>
+        <div class="pn" style="margin-bottom:16px"><div class="pn-h"><span class="pn-t">🎨 ธีมสี Dashboard</span><span class="pill pill-t">เลือกได้เลย</span></div><div class="pn-b"><div class="theme-grid" id="themeGrid"></div><div style="font-size:12px;color:var(--text3)">💡 บันทึกอัตโนมัติ</div></div></div>
+        <div class="g2">
+          <div class="pn"><div class="pn-h"><span class="pn-t">Firmware</span></div><div class="pn-b" id="fwList"></div></div>
+          <div class="pn"><div class="pn-h"><span class="pn-t">ข้อมูลระบบ</span></div><div class="pn-b">
+            <div class="sysrow"><span class="sysrow-k">Platform</span><span class="sysrow-v" style="color:var(--teal)">SmartGov v2.4.1</span></div>
+            <div class="sysrow"><span class="sysrow-k">Domain</span><span class="sysrow-v" style="font-size:11px">ratchaburi.smartgov.co.th</span></div>
+            <div class="sysrow"><span class="sysrow-k">WireGuard</span><span class="sysrow-v"><span class="tag tg">CONNECTED</span></span></div>
+            <div class="sysrow"><span class="sysrow-k">MQTT Broker</span><span class="sysrow-v"><span class="tag tg">RUNNING</span></span></div>
+            <div class="sysrow"><span class="sysrow-k">NVR 32CH</span><span class="sysrow-v"><span class="tag tg">ONLINE</span></span></div>
+            <div class="sysrow"><span class="sysrow-k">InfluxDB</span><span class="sysrow-v"><span class="tag tg">RUNNING</span></span></div>
+            <div class="sysrow"><span class="sysrow-k">Dell OptiPlex</span><span class="sysrow-v"><span class="tag tg">ONLINE</span></span></div>
+            <div class="sysrow"><span class="sysrow-k">ISP</span><span class="sysrow-v">300/300 Mbps</span></div>
+            <div class="sysrow"><span class="sysrow-k">Uptime</span><span class="sysrow-v" style="color:var(--green)">14d 6h 23m</span></div>
+          </div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SIDEBAR ───────────────────────────────────────────────
+let sbOpen=true;
+function toggleSidebar(){
+  sbOpen=!sbOpen;
+  document.getElementById('sidebar').classList.toggle('collapsed',!sbOpen);
+  setTimeout(()=>Object.values(maps).forEach(m=>m.invalidateSize()),280);
+}
+
+// ── THEMES ───────────────────────────────────────────────
+const THEMES=[
+  {id:'dark',  name:'Dark',   desc:'มืด คลาสสิก',    dots:['#141928','#2dd4bf','#38bdf8','#4ade80']},
+  {id:'light', name:'Light',  desc:'สว่าง กลางวัน',  dots:['#f0f4f8','#0d9488','#0284c7','#16a34a']},
+  {id:'ocean', name:'Ocean',  desc:'น้ำเงินลึก',      dots:['#040d1a','#00e5ff','#448aff','#00e676']},
+  {id:'forest',name:'Forest', desc:'เขียวธรรมชาติ',  dots:['#0a120a','#4ade80','#86efac','#fef08a']},
+  {id:'sunset',name:'Sunset', desc:'ม่วงชมพู',        dots:['#1a0a0f','#f472b6','#fb923c','#fbbf24']},
+];
+let curTheme=localStorage.getItem('sg-theme')||'dark';
+function applyTheme(id){curTheme=id;document.documentElement.setAttribute('data-theme',id==='dark'?'':id);localStorage.setItem('sg-theme',id);renderThemeGrid();}
+function renderThemeGrid(){
+  const g=document.getElementById('themeGrid');if(!g)return;
+  g.innerHTML=THEMES.map(t=>`<div class="theme-card ${t.id===curTheme?'active':''}" onclick="applyTheme('${t.id}')"><div class="theme-preview" style="background:${t.dots[0]}">${t.dots.slice(1).map(c=>`<div class="tp-dot" style="background:${c}"></div>`).join('')}</div><div class="theme-name">${t.name}</div><div class="theme-desc">${t.desc}</div></div>`).join('');
+}
+
+// ── CONSTANTS ─────────────────────────────────────────────
+const CENTER=[13.6022,100.0241];
+const NAMES=['ชุมชนบัวงาม','ตลาดสด','โรงเรียน','วัดบัวงาม','สวนสาธารณะ','ถนนสาย 1','ชุมชนใต้','สนง.เทศบาล','หมู่ 9','หมู่ 10'];
+const STATS=['online','online','alert','online','online','online','offline','online','online','online'];
+const LLNGS=[[13.6078,100.0192],[13.6054,100.0261],[13.6030,100.0310],[13.5998,100.0175],[13.6015,100.0241],[13.6041,100.0285],[13.5975,100.0220],[13.6000,100.0260],[13.5960,100.0195],[13.6065,100.0330]];
+const EMOJIS=['🏘️','🛣️','🌳','⛪','🏫','🏪','🌾','🏛️','🏠','🌿'];
+// 10 distinct line colors for charts
+const LINE_COLORS=['#2dd4bf','#38bdf8','#f87171','#4ade80','#fbbf24','#a78bfa','#fb923c','#f472b6','#34d399','#60a5fa'];
+
+let nodes=[],maps={},mMarkers={},mLabels={},mCamMarkers={};
+let curRole='superadmin', sensorMode='status';
+let selCamNode=null, selCamIdx=null;
+let chartHistory={temp:[],humid:[],pm:[]};
+
+// ── DATA ──────────────────────────────────────────────────
+function genNodes(){
+  nodes=NAMES.map((nm,i)=>({
+    id:i+1,name:nm,status:STATS[i],
+    temp:i===2?(37+Math.random()*1.5).toFixed(1):(24+Math.random()*7).toFixed(1),
+    humid:(55+Math.random()*20).toFixed(1),
+    pm25:i===2?(50+Math.random()*20).toFixed(0):(8+Math.random()*35).toFixed(0),
+    door:i===4?'เปิด':'ปิด',ll:LLNGS[i],
+    time:new Date().toLocaleTimeString('th-TH')
+  }));
+  // init 24hr history (simulate past 24 points)
+  chartHistory={temp:[],humid:[],pm:[]};
+  for(let h=0;h<24;h++){
+    chartHistory.temp.push(nodes.map((_,i)=>i===2?(36+Math.random()*3):(23+Math.random()*8)));
+    chartHistory.humid.push(nodes.map(()=>54+Math.random()*22));
+    chartHistory.pm.push(nodes.map((_,i)=>i===2?(48+Math.random()*25):(7+Math.random()*36)));
+  }
+}
+function tickNodes(){
+  nodes.forEach((d,i)=>{
+    if(d.status!=='offline'){
+      d.temp=i===2?(37+Math.random()*1.5).toFixed(1):(24+Math.random()*7).toFixed(1);
+      d.humid=(55+Math.random()*20).toFixed(1);
+      d.pm25=i===2?(50+Math.random()*20).toFixed(0):(8+Math.random()*35).toFixed(0);
+      d.time=new Date().toLocaleTimeString('th-TH');
+    }
+  });
+  // push new point, drop oldest
+  chartHistory.temp.push(nodes.map(d=>parseFloat(d.temp)));
+  chartHistory.humid.push(nodes.map(d=>parseFloat(d.humid)));
+  chartHistory.pm.push(nodes.map(d=>parseFloat(d.pm25)));
+  if(chartHistory.temp.length>24){['temp','humid','pm'].forEach(k=>chartHistory[k].shift());}
+}
+function calcAvg(){
+  const on=nodes.filter(d=>d.status!=='offline');
+  document.getElementById('avgTmp').textContent=(on.reduce((s,d)=>s+parseFloat(d.temp),0)/on.length).toFixed(1);
+  document.getElementById('avgHumid').textContent=(on.reduce((s,d)=>s+parseFloat(d.humid),0)/on.length).toFixed(1);
+  document.getElementById('avgPm').textContent=(on.reduce((s,d)=>s+parseFloat(d.pm25),0)/on.length).toFixed(0);
+  document.getElementById('lastUpd').textContent=new Date().toLocaleTimeString('th-TH');
+}
+
+// ── SENSOR MODE ───────────────────────────────────────────
+const MODES={status:{label:'สถานะ Node',icon:'📡'},temp:{label:'อุณหภูมิ (°C)',icon:'🌡️'},humid:{label:'ความชื้น (%)',icon:'💧'},pm25:{label:'PM2.5',icon:'🌫️'},camera:{label:'สถานะกล้อง',icon:'📷'},alert:{label:'การแจ้งเตือน',icon:'🔔'}};
+function setSensorMode(mode){
+  sensorMode=mode;
+  ['node','cam','temp','humid','pm','alert'].forEach(k=>{
+    const map={node:'status',cam:'camera',temp:'temp',humid:'humid',pm:'pm25',alert:'alert'};
+    document.getElementById('sc-'+k)?.classList.toggle('active-sensor',map[k]===mode);
+  });
+  const cfg=MODES[mode];
+  document.getElementById('mapModeLabel').textContent=cfg.icon+' '+cfg.label;
+  refreshAllLabels();
+}
+
+// ── MAP COMMON ────────────────────────────────────────────
+function mkIcon(st){
+  const c=st==='online'?'#22c55e':st==='alert'?'#f59e0b':'#ef4444';
+  return L.divIcon({html:`<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"><circle cx="14" cy="14" r="13" fill="${c}" opacity=".18"/><circle cx="14" cy="14" r="8" fill="${c}" opacity=".95"/><circle cx="14" cy="14" r="4" fill="white" opacity=".7"/></svg>`,iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-16],className:''});
+}
+function getLabelInfo(d){
+  if(d.status==='offline')return{text:'OFF',cls:'hot'};
+  switch(sensorMode){
+    case 'temp':  return{text:d.temp+'°',cls:parseFloat(d.temp)>35?'hot':parseFloat(d.temp)>30?'warn':'ok'};
+    case 'humid': return{text:d.humid+'%',cls:'purple'};
+    case 'pm25':  return{text:'PM'+d.pm25,cls:parseFloat(d.pm25)>50?'hot':parseFloat(d.pm25)>25?'warn':'ok'};
+    case 'camera':return{text:'📷3/3',cls:'ok'};
+    case 'alert': return{text:d.status==='alert'?'⚠️ALT':'✅OK',cls:d.status==='alert'?'warn':'ok'};
+    default:      return{text:'N'+String(d.id).padStart(2,'0'),cls:d.status==='online'?'ok':d.status==='alert'?'warn':'hot'};
+  }
+}
+function popupHtml(d){
+  const sc=d.status==='online'?'#22c55e':d.status==='alert'?'#f59e0b':'#ef4444';
+  return`<div><div class="pu-h">Node${String(d.id).padStart(2,'0')} — ${d.name}</div>
+    <div class="pu-r"><span class="pu-k">สถานะ</span><span class="pu-v" style="color:${sc}">${d.status.toUpperCase()}</span></div>
+    ${d.status!=='offline'?`<div class="pu-r"><span class="pu-k">🌡️ Temp</span><span class="pu-v">${d.temp}°C</span></div>
+    <div class="pu-r"><span class="pu-k">💧 Humid</span><span class="pu-v">${d.humid}%</span></div>
+    <div class="pu-r"><span class="pu-k">🌫️ PM2.5</span><span class="pu-v">${d.pm25} μg</span></div>
+    <div class="pu-r"><span class="pu-k">🚪 ประตู</span><span class="pu-v">${d.door}</span></div>`
+    :'<div class="pu-r" style="color:#ef4444">⚠️ ไม่มีสัญญาณ</div>'}
+  </div>`;
+}
+
+// ── STANDARD MAP ──────────────────────────────────────────
+function initMap(id,zoom){
+  if(maps[id])return;
+  const m=L.map(id,{zoomControl:true,scrollWheelZoom:false}).setView(CENTER,zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:19}).addTo(m);
+  maps[id]=m;mMarkers[id]={};mLabels[id]={};
+  placeMarkersAndLabels(id);
+}
+function placeMarkersAndLabels(id){
+  const m=maps[id];
+  Object.values(mMarkers[id]||{}).forEach(mk=>m.removeLayer(mk));
+  Object.values(mLabels[id]||{}).forEach(lb=>m.removeLayer(lb));
+  mMarkers[id]={};mLabels[id]={};
+  nodes.forEach((d,i)=>{
+    const mk=L.marker(d.ll,{icon:mkIcon(d.status)}).bindPopup(popupHtml(d),{className:'lf-popup',maxWidth:230}).addTo(m);
+    mMarkers[id][i]=mk;
+    const info=getLabelInfo(d);
+    const lb=L.marker(d.ll,{icon:L.divIcon({html:`<div class="map-label ${info.cls}">${info.text}</div>`,iconSize:null,iconAnchor:[-10,28],className:''}),interactive:false,zIndexOffset:-100}).addTo(m);
+    mLabels[id][i]=lb;
+  });
+}
+function refreshAllLabels(){
+  Object.keys(maps).filter(id=>id!=='map-cctv').forEach(id=>{
+    nodes.forEach((d,i)=>{
+      const lb=mLabels[id]?.[i];if(!lb)return;
+      const info=getLabelInfo(d);
+      lb.setIcon(L.divIcon({html:`<div class="map-label ${info.cls}">${info.text}</div>`,iconSize:null,iconAnchor:[-10,28],className:''}));
+      const mk=mMarkers[id]?.[i];if(mk){mk.setIcon(mkIcon(d.status));if(mk.isPopupOpen())mk.setPopupContent(popupHtml(d));}
+    });
+  });
+}
+
+// ── CAMERA MAP ────────────────────────────────────────────
+function initCamMap(){
+  if(maps['map-cctv'])return;
+  const m=L.map('map-cctv',{zoomControl:true,scrollWheelZoom:false}).setView(CENTER,13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:19}).addTo(m);
+  maps['map-cctv']=m; mCamMarkers={};
+  placeCamMarkers();
+}
+function placeCamMarkers(){
+  const m=maps['map-cctv'];if(!m)return;
+  Object.values(mCamMarkers).forEach(mk=>m.removeLayer(mk));
+  Object.keys(mCamMarkers).forEach(k=>delete mCamMarkers[k]);
+  nodes.forEach((d,i)=>{
+    const isActive=selCamNode===i;
+    const cls='cam-marker'+(d.status==='offline'?' offline':isActive?' active':'');
+    const mk=L.marker(d.ll,{
+      icon:L.divIcon({html:`<div class="${cls}">📷 N${String(d.id).padStart(2,'0')}</div>`,iconSize:null,iconAnchor:[0,0],className:''}),
+      zIndexOffset:isActive?1000:0
+    }).addTo(m);
+    mk.on('click',()=>selectCamNode(i));
+    mCamMarkers[i]=mk;
+  });
+}
+function selectCamNode(i){
+  selCamNode=i;
+  const d=nodes[i];
+  // update map markers
+  placeCamMarkers();
+  maps['map-cctv'].setView(d.ll,15);
+  // update node selector buttons
+  document.querySelectorAll('.node-sel-btn').forEach((btn,j)=>btn.classList.toggle('on',j===i));
+  // update panel header
+  document.getElementById('camSelectedLabel').textContent='Node '+String(d.id).padStart(2,'0')+' — '+d.name;
+  document.getElementById('camPanelTitle').textContent='📷 Node '+String(d.id).padStart(2,'0')+' — '+d.name;
+  document.getElementById('camOnlinePill').textContent=d.status!=='offline'?'3/3 Online':'Offline';
+  document.getElementById('camEmptyMsg').style.display='none';
+  // render cameras for this node
+  renderNodeCams(i);
+}
+function renderNodeCams(nodeIdx){
+  const d=nodes[nodeIdx];
+  const cams=[
+    {c:1,ok:d.status!=='offline'},
+    {c:2,ok:d.status!=='offline'},
+    {c:3,ok:d.status!=='offline'}
+  ];
+  // clear viewer if new node
+  if(selCamIdx===null||selCamNode!==nodeIdx){
+    selCamIdx=d.status!=='offline'?0:null;
+  }
+  document.getElementById('camGrid').innerHTML=cams.map((c,ci)=>`
+    <div class="cam-c ${selCamIdx===ci?'active':''}" onclick="selectCam(${nodeIdx},${ci})">
+      <div class="cam-prev">${EMOJIS[d.id-1]}
+        ${c.ok?'<div class="cam-rec">REC</div>':'<div class="cam-off">📵 OFFLINE</div>'}
+      </div>
+      <div class="cam-inf">
+        <div class="cam-name">กล้อง ${c.c}</div>
+        <div class="cam-loc">${c.ok?'🟢 Online':'🔴 Offline'}</div>
+      </div>
+    </div>`).join('');
+  if(selCamIdx!==null) showCamViewer(nodeIdx,selCamIdx);
+}
+function selectCam(nodeIdx,camIdx){
+  selCamNode=nodeIdx; selCamIdx=camIdx;
+  document.querySelectorAll('#camGrid .cam-c').forEach((el,i)=>el.classList.toggle('active',i===camIdx));
+  showCamViewer(nodeIdx,camIdx);
+}
+function showCamViewer(nodeIdx,camIdx){
+  const d=nodes[nodeIdx];
+  const viewer=document.getElementById('camViewer');
+  viewer.style.display='block';
+  const screen=document.getElementById('camViewerScreen');
+  if(d.status==='offline'){
+    screen.innerHTML=`<div style="color:var(--red);font-size:14px;text-align:center">📵 Node ออฟไลน์<br><span style="font-size:12px;color:var(--text3)">ไม่สามารถดูกล้องได้</span></div>`;
+  } else {
+    screen.innerHTML=`
+      <div style="font-size:50px">${EMOJIS[d.id-1]}</div>
+      <div style="position:absolute;top:8px;right:8px;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:3px 7px;border-radius:4px;font-family:var(--mono);animation:blink 2s infinite">● LIVE</div>
+      <div style="position:absolute;bottom:8px;left:8px;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.6)">${new Date().toLocaleTimeString('th-TH')}</div>
+      <div style="position:absolute;bottom:8px;right:8px;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.6)">1080p H.265</div>`;
+  }
+  document.getElementById('camViewerName').textContent=`กล้อง ${camIdx+1} — Node${String(d.id).padStart(2,'0')} ${d.name}`;
+  document.getElementById('camViewerBadge').textContent=d.status!=='offline'?'LIVE':'OFFLINE';
+  document.getElementById('camViewerBadge').className='cvi-badge '+(d.status!=='offline'?'tg':'tr');
+}
+
+// ── NODE LIST ─────────────────────────────────────────────
+function renderNodeList(){
+  document.getElementById('nodeList').innerHTML=nodes.map((d,i)=>{
+    let v='';
+    switch(sensorMode){
+      case 'temp':  v=`<span class="ni-val ${parseFloat(d.temp)>35?'hot':parseFloat(d.temp)>30?'warm':'cool'}">${d.status==='offline'?'--':d.temp+'°'}</span>`;break;
+      case 'humid': v=`<span class="ni-val" style="color:var(--purple)">${d.status==='offline'?'--':d.humid+'%'}</span>`;break;
+      case 'pm25':  v=`<span class="ni-val ${parseFloat(d.pm25)>50?'hot':parseFloat(d.pm25)>25?'warm':'cool'}">${d.status==='offline'?'--':d.pm25}</span>`;break;
+      default:      v=`<span class="ni-val cool">${d.status==='offline'?'--':d.temp+'°'}</span>`;
+    }
+    return`<div class="ni" onclick="focusNode(${i})"><div class="ni-dot ${d.status==='online'?'dig':d.status==='alert'?'diy':'dir'}"></div><div class="ni-id">N${String(d.id).padStart(2,'0')}</div><div class="ni-name">${d.name}</div>${v}<div class="ni-door">${d.door==='เปิด'?'🔓':'🔒'}</div></div>`;
+  }).join('');
+  calcAvg();
+}
+function focusNode(i){
+  document.querySelectorAll('.ni').forEach((el,j)=>el.classList.toggle('sel',j===i));
+  const d=nodes[i];
+  ['map-dashboard','map-full'].forEach(id=>{if(maps[id]){maps[id].setView(d.ll,15);mMarkers[id][i]?.openPopup();}});
+}
+
+// ── SENSOR CARDS ─────────────────────────────────────────
+function renderSnrCards(){
+  document.getElementById('snrCards').innerHTML=nodes.map(d=>`
+    <div class="snr-c">
+      <div class="snr-id">NODE ${String(d.id).padStart(2,'0')}</div>
+      <div class="snr-nm">${d.name}</div>
+      <div class="snr-tmp ${parseFloat(d.temp)>35?'hot':parseFloat(d.temp)>30?'warm':'cool'}">${d.status==='offline'?'<span style="color:var(--red);font-size:13px">OFF</span>':d.temp+'°'}</div>
+      <div class="snr-hum">${d.status==='offline'?'--':'💧'+d.humid+'%'}</div>
+      <div class="snr-pm">${d.status==='offline'?'--':'🌫️'+d.pm25+'μg'}</div>
+      <div class="snr-door">${d.door==='เปิด'?'🔓':'🔒'}</div>
+      <div class="snr-ts">${d.time}</div>
+    </div>`).join('');
+}
+
+// ── MULTI-LINE CHART ──────────────────────────────────────
+function drawMultiChart(canvasId, historyKey, yMin, yMax, thresholds){
+  const cv=document.getElementById(canvasId);if(!cv)return;
+  const ctx=cv.getContext('2d');
+  const w=cv.offsetWidth||700,h=140;
+  cv.width=w;cv.height=h;ctx.clearRect(0,0,w,h);
+  const data=chartHistory[historyKey];
+  const pts=data.length;
+  if(!pts)return;
+
+  // grid + y labels
+  const steps=4;
+  for(let s=0;s<=steps;s++){
+    const v=yMin+(yMax-yMin)*(s/steps);
+    const y=h-((v-yMin)/(yMax-yMin))*h;
+    ctx.strokeStyle='rgba(100,130,160,.18)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(32,y);ctx.lineTo(w,y);ctx.stroke();
+    ctx.fillStyle='rgba(100,130,160,.6)';ctx.font='9px IBM Plex Mono,monospace';
+    ctx.fillText(Math.round(v),2,y+3);
+  }
+
+  // threshold lines
+  if(thresholds){
+    thresholds.forEach(th=>{
+      const y=h-((th.v-yMin)/(yMax-yMin))*h;
+      ctx.strokeStyle=th.color;ctx.lineWidth=1.5;ctx.setLineDash([5,4]);
+      ctx.beginPath();ctx.moveTo(32,y);ctx.lineTo(w,y);ctx.stroke();
+      ctx.setLineDash([]);
+    });
+  }
+
+  // lines per node
+  nodes.forEach((d,ni)=>{
+    if(d.status==='offline')return;
+    ctx.strokeStyle=LINE_COLORS[ni%LINE_COLORS.length];
+    ctx.lineWidth=1.5;ctx.lineJoin='round';
+    ctx.globalAlpha=0.85;
+    ctx.beginPath();
+    let first=true;
+    data.forEach((snap,hi)=>{
+      const v=snap[ni]??0;
+      const x=32+(hi/(pts-1||1))*(w-32);
+      const y=h-((v-yMin)/(yMax-yMin))*h;
+      first?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      first=false;
+    });
+    ctx.stroke();
+    ctx.globalAlpha=1;
+  });
+
+  // x labels
+  ctx.fillStyle='rgba(100,130,160,.6)';ctx.font='9px IBM Plex Mono,monospace';
+  const now=new Date();
+  [0,6,12,18,23].forEach(i=>{
+    const h2=new Date(now-((23-i)*3600000));
+    const x=32+(i/23)*(w-32);
+    ctx.fillText(String(h2.getHours()).padStart(2,'0')+':00',x-10,h-1);
+  });
+}
+
+function renderLegend(id){
+  document.getElementById(id).innerHTML=nodes.map((d,i)=>`
+    <div class="cl-item">
+      <div class="cl-dot" style="background:${LINE_COLORS[i%LINE_COLORS.length]}"></div>
+      <span>N${String(d.id).padStart(2,'0')} ${d.name}</span>
+    </div>`).join('');
+}
+
+function drawAllCharts(){
+  renderLegend('legend-temp');
+  renderLegend('legend-humid');
+  renderLegend('legend-pm');
+  drawMultiChart('chart-temp','temp',15,45,[{v:35,color:'rgba(251,191,36,.6)'}]);
+  drawMultiChart('chart-humid','humid',30,100,[{v:80,color:'rgba(167,139,250,.5)'}]);
+  drawMultiChart('chart-pm','pm',0,80,[{v:25,color:'rgba(74,222,128,.5)'},{v:50,color:'rgba(248,113,113,.6)'}]);
+}
+
+// ── CAMERA NODE SELECTOR ROW ──────────────────────────────
+function renderNodeSelRow(){
+  document.getElementById('nodeSelRow').innerHTML=nodes.map((d,i)=>`
+    <button class="node-sel-btn ${d.status==='offline'?'offline':''} ${selCamNode===i?'on':''}"
+      onclick="selectCamNode(${i})">
+      N${String(d.id).padStart(2,'0')}
+    </button>`).join('');
+}
+
+// ── MISC RENDERS ──────────────────────────────────────────
+function renderZones(){document.getElementById('audioZones').innerHTML=nodes.map((d,i)=>`<div class="zone-b on" onclick="this.classList.toggle('on')"><div style="font-size:11px;font-weight:600">N${String(d.id).padStart(2,'0')}</div><div style="font-size:10px;color:var(--text3);margin-top:1px">${d.status!=='offline'?'✅':'❌'}</div></div>`).join('');}
+function renderFW(){document.getElementById('fwList').innerHTML=nodes.map((d,i)=>`<div class="fw-row"><span class="fw-id">N${String(d.id).padStart(2,'0')}</span><span class="fw-nm">${d.name}</span><span class="fw-ver">v1.2.${i%2===0?'4':'3'}</span>${i%2!==0?'<button class="btn-upd">อัพเดท</button>':'<span style="font-size:11px;color:var(--green)">✅ ล่าสุด</span>'}</div>`).join('');}
+
+// ── AUDIO ─────────────────────────────────────────────────
+function selAll(){document.querySelectorAll('.zone-b').forEach(b=>b.classList.add('on'))}
+function clrAll(){document.querySelectorAll('.zone-b').forEach(b=>b.classList.remove('on'))}
+function setAt(t,btn){document.querySelectorAll('.atypes .at-b').forEach(b=>b.classList.remove('on'));btn.classList.add('on');['file','tts','live'].forEach(k=>document.getElementById('inp-'+k).style.display=k===t?'block':'none');}
+function startBC(){document.getElementById('stopBtn').style.display='inline-block';document.getElementById('audioSt').innerHTML=nodes.map(d=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;border-bottom:1px solid var(--border)"><span style="font-family:var(--mono);color:var(--text3);width:38px">N${String(d.id).padStart(2,'0')}</span><span style="flex:1;color:var(--text2)">${d.name}</span>${d.status!=='offline'?'<span style="color:var(--green)">▶</span>':'<span style="color:var(--red)">❌</span>'}</div>`).join('');}
+function stopBC(){document.getElementById('stopBtn').style.display='none';document.getElementById('audioSt').innerHTML='';}
+
+// ── LOGIN ─────────────────────────────────────────────────
+function setRole(r,btn){curRole=r;document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('on'));btn.classList.add('on');document.getElementById('lu').value={superadmin:'superadmin',admin:'admin',user:'viewer'}[r];}
+function doLogin(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='block';
+  const names={superadmin:'สมชาย ใจดี',admin:'วิชัย บุญมา',user:'สุดา แสงดาว'};
+  document.getElementById('tUser').textContent=names[curRole];
+  const b=document.getElementById('rBadge');b.textContent=curRole.toUpperCase();b.className='rbadge rb-'+curRole;
+  if(curRole==='user')document.getElementById('navSet').style.display='none';
+  applyTheme(curTheme); initAll();
+}
+function doLogout(){
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  Object.keys(maps).forEach(k=>{maps[k].remove();delete maps[k];});
+  mMarkers={};mLabels={};mCamMarkers={};selCamNode=null;
+}
+
+// ── NAV ───────────────────────────────────────────────────
+function gp(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nav').forEach(n=>n.classList.remove('on'));
+  document.getElementById('page-'+id).classList.add('on');
+  if(el)el.classList.add('on');
+  setTimeout(()=>{
+    if(id==='dashboard'){initMap('map-dashboard',13);}
+    if(id==='map'){initMap('map-full',14);}
+    if(id==='sensors'){drawAllCharts();}
+    if(id==='cameras'){initCamMap();renderNodeSelRow();}
+    if(id==='settings'){renderThemeGrid();}
+  },60);
+}
+
+// ── INIT & TICK ───────────────────────────────────────────
+function initAll(){
+  genNodes();
+  renderNodeList();renderSnrCards();renderZones();renderFW();
+  setSensorMode('status');
+  setTimeout(()=>initMap('map-dashboard',13),120);
+}
+setInterval(()=>{
+  tickNodes();
+  renderNodeList();renderSnrCards();refreshAllLabels();
+  // refresh cam panel if open
+  if(selCamNode!==null&&document.getElementById('page-cameras').classList.contains('on')){
+    placeCamMarkers();renderNodeSelRow();
+    if(selCamIdx!==null)renderNodeCams(selCamNode);
+  }
+  // redraw charts if sensor page open
+  if(document.getElementById('page-sensors').classList.contains('on'))drawAllCharts();
+},4000);
+</script>
+</body>
+</html>
